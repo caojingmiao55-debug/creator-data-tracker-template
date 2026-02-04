@@ -1,0 +1,9 @@
+{
+  "name": "com.creator.cookiesync",
+  "description": "Cookie Sync for Creator Data Tracker",
+  "path": "/path/to/creator-data-tracker/tools/chrome-extension/native-host/cookie_sync.py",
+  "type": "stdio",
+  "allowed_origins": [
+    "chrome-extension://bhhbiejpckimmklibbbdhkiepbnbcjml/"
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "name": "com.creator.datacollector",
+  "description": "Creator Data Collector - Cookie Sync Host",
+  "path": "/tmp/creator-data-tracker/native_host/cookie_sync_host.py",
+  "type": "stdio",
+  "allowed_origins": [
+    "chrome-extension://YOUR_EXTENSION_ID_HERE/"
+  ]
+}

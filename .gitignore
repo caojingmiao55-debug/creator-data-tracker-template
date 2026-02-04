@@ -1,0 +1,43 @@
+# 配置文件（包含敏感信息）
+config.json
+config/ga_credentials.json
+!config/ga_credentials.example.json
+
+# 数据文件（包含个人数据）
+data/*.db
+data/*.db-journal
+data/*.db-wal
+data/*.db-shm
+data/all_data.json
+data/ga_data.json
+!data/all_data.example.json
+!data/ga_data.example.json
+
+# 浏览器数据（包含登录状态）
+data/browser_data/
+
+# CSV 文件（已迁移到 SQLite）
+data/*.csv
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+*.so
+.env
+venv/
+ENV/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Logs
+*.log
+logs/
+.vercel
+.env*.local

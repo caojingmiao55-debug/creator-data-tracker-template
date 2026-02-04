@@ -1,0 +1,1224 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>创作者数据分析仪表盘</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .update-time {
+            color: #666;
+            font-size: 14px;
+        }
+
+        /* 时间周期选择器 */
+        .period-selector {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .period-btn {
+            padding: 8px 16px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .period-btn:hover {
+            border-color: #4f46e5;
+            color: #4f46e5;
+        }
+
+        .period-btn.active {
+            background: #4f46e5;
+            color: white;
+            border-color: #4f46e5;
+        }
+
+        /* 主布局：左右两栏 */
+        .main-layout {
+            display: grid;
+            grid-template-columns: 380px 1fr;
+            gap: 20px;
+            align-items: start;
+        }
+
+        /* 左侧：平台卡片 */
+        .platforms-column {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            position: sticky;
+            top: 20px;
+        }
+
+        .platform-card {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            flex: 1;
+        }
+
+        .platform-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .platform-info {
+            flex: 1;
+        }
+
+        .platform-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .platform-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .platform-info {
+            flex: 1;
+        }
+
+        .platform-name {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .platform-account {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .platform-total {
+            text-align: center;
+            min-width: 70px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+        }
+
+        .total-label {
+            font-size: 11px;
+            color: #666;
+            line-height: 1.2;
+        }
+
+        .total-value {
+            font-size: 18px;
+            font-weight: 600;
+            color: #4f46e5;
+            line-height: 1.3;
+        }
+
+        .total-change {
+            font-size: 11px;
+            min-height: 16px;
+            line-height: 1.2;
+        }
+
+        .platform-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 8px 4px;
+            background: #f9fafb;
+            border-radius: 6px;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: #666;
+        }
+
+        .stat-value {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .stat-change {
+            font-size: 11px;
+        }
+
+        .change-up { color: #ef4444; }
+        .change-down { color: #10b981; }
+        .change-zero { color: #666; }
+
+        .platform-update-time {
+            font-size: 11px;
+            color: #999;
+            text-align: right;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        /* 平台状态 */
+        .platform-status {
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-left: 8px;
+        }
+
+        .platform-status.pending {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .platform-status.error {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        /* 右侧：GA 数据 */
+        .ga-column {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .ga-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .ga-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .ga-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .ga-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .ga-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .ga-subtitle {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .ga-overview {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .ga-metric {
+            text-align: center;
+            padding: 16px;
+            background: #f9fafb;
+            border-radius: 10px;
+        }
+
+        .ga-metric-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        .ga-metric-label {
+            font-size: 13px;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        .ga-metric-change {
+            font-size: 12px;
+            margin-top: 4px;
+        }
+
+        .ga-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .ga-grid-4 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+
+        .ga-section {
+            background: #f9fafb;
+            border-radius: 10px;
+            padding: 16px;
+        }
+
+        .ga-section-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #374151;
+        }
+
+        .ga-list {
+            list-style: none;
+        }
+
+        .ga-list-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 13px;
+        }
+
+        .ga-list-item:last-child {
+            border-bottom: none;
+        }
+
+        .ga-list-name {
+            color: #374151;
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .ga-list-value {
+            font-weight: 600;
+            color: #4f46e5;
+        }
+
+        .ga-chart-container {
+            height: 200px;
+            margin-bottom: 20px;
+        }
+
+        /* 热门内容 */
+        .hot-content {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .content-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 12px;
+        }
+
+        .content-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: #f9fafb;
+            border-radius: 8px;
+        }
+
+        .content-rank {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .rank-1 { background: #ffd700; color: #000; }
+        .rank-2 { background: #c0c0c0; color: #000; }
+        .rank-3 { background: #cd7f32; color: #fff; }
+        .rank-other { background: #e5e7eb; color: #666; }
+
+        .content-info { flex: 1; min-width: 0; }
+
+        .content-title {
+            font-size: 13px;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .content-meta {
+            font-size: 11px;
+            color: #666;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .content-meta img {
+            width: 14px;
+            height: 14px;
+            border-radius: 3px;
+        }
+
+        .content-stats {
+            text-align: right;
+            font-size: 12px;
+        }
+
+        .content-stats-value {
+            font-weight: 600;
+        }
+
+        /* 响应式 */
+        @media (max-width: 1400px) {
+            .ga-grid-4 {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 1200px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .platforms-column {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                position: static;
+            }
+
+            .ga-overview {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .platforms-column {
+                grid-template-columns: 1fr;
+            }
+
+            .platform-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .ga-grid,
+            .ga-grid-4 {
+                grid-template-columns: 1fr;
+            }
+
+            .ga-overview {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>创作者数据分析仪表盘</h1>
+            <span class="update-time" id="updateTime">数据加载中...</span>
+        </header>
+
+        <!-- 时间周期选择器 -->
+        <div class="period-selector">
+            <button class="period-btn active" data-period="1">vs 昨天</button>
+            <button class="period-btn" data-period="7">vs 7天前</button>
+            <button class="period-btn" data-period="30">vs 30天前</button>
+        </div>
+
+        <div class="main-layout">
+            <!-- 左侧：平台卡片 -->
+            <div class="platforms-column" id="platformsColumn">
+                <div class="loading">加载中...</div>
+            </div>
+
+            <!-- 右侧：GA 数据 -->
+            <div class="ga-column" id="gaColumn">
+                <div class="ga-card">
+                    <div class="ga-header">
+                        <div class="ga-icon">📊</div>
+                        <div>
+                            <div class="ga-title">网站数据监测</div>
+                            <div class="ga-subtitle" id="gaUpdateTime">加载中...</div>
+                        </div>
+                    </div>
+
+                    <div class="ga-overview" id="gaOverview">
+                        <div class="ga-metric">
+                            <div class="ga-metric-value">-</div>
+                            <div class="ga-metric-label">活跃用户</div>
+                        </div>
+                        <div class="ga-metric">
+                            <div class="ga-metric-value">-</div>
+                            <div class="ga-metric-label">会话数</div>
+                        </div>
+                        <div class="ga-metric">
+                            <div class="ga-metric-value">-</div>
+                            <div class="ga-metric-label">页面浏览</div>
+                        </div>
+                        <div class="ga-metric">
+                            <div class="ga-metric-value">-</div>
+                            <div class="ga-metric-label">平均时长</div>
+                        </div>
+                    </div>
+
+                    <div class="ga-chart-container">
+                        <canvas id="gaChart"></canvas>
+                    </div>
+
+                    <!-- 第一行：热门页面/流量来源/着陆页/退出页 -->
+                    <div class="ga-grid-4">
+                        <div class="ga-section">
+                            <div class="ga-section-title">热门页面</div>
+                            <ul class="ga-list" id="gaTopPages"></ul>
+                        </div>
+                        <div class="ga-section">
+                            <div class="ga-section-title">流量来源</div>
+                            <ul class="ga-list" id="gaTrafficSources"></ul>
+                        </div>
+                        <div class="ga-section">
+                            <div class="ga-section-title">着陆页</div>
+                            <ul class="ga-list" id="gaLandingPages"></ul>
+                        </div>
+                        <div class="ga-section">
+                            <div class="ga-section-title">退出页</div>
+                            <ul class="ga-list" id="gaExitPages"></ul>
+                        </div>
+                    </div>
+
+                    <!-- 第二行：设备/操作系统/语言/地理分布 -->
+                    <div class="ga-grid-4" style="margin-top: 16px;">
+                        <div class="ga-section">
+                            <div class="ga-section-title">设备类型</div>
+                            <ul class="ga-list" id="gaDevices"></ul>
+                        </div>
+                        <div class="ga-section">
+                            <div class="ga-section-title">操作系统</div>
+                            <ul class="ga-list" id="gaOS"></ul>
+                        </div>
+                        <div class="ga-section">
+                            <div class="ga-section-title">语言</div>
+                            <ul class="ga-list" id="gaLanguages"></ul>
+                        </div>
+                        <div class="ga-section">
+                            <div class="ga-section-title">地理分布</div>
+                            <ul class="ga-list" id="gaGeo"></ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 热门内容 -->
+                <div class="hot-content">
+                    <h2 class="section-title">热门内容 TOP 5</h2>
+                    <div class="content-list" id="hotContentList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局数据
+        let platformData = null;
+        let gaData = null;
+        let gaChart = null;
+        let currentPeriod = 1; // 默认对比昨天
+
+        // 平台配置
+        const platformConfig = {
+            douyin: { name: '抖音', icon: 'assets/抖音.png', color: '#fe2c55' },
+            xiaohongshu: { name: '小红书', icon: 'assets/小红书.png', color: '#ff2442' },
+            shipinhao: { name: '视频号', icon: 'assets/视频号.jpeg', color: '#fa9d3b' },
+            gongzhonghao: { name: '公众号', icon: 'assets/公众号.png', color: '#07c160' }
+        };
+
+        // 格式化数字
+        function formatNumber(num) {
+            if (num === undefined || num === null) return '-';
+            if (num >= 10000) return (num / 10000).toFixed(1) + '万';
+            return num.toLocaleString();
+        }
+
+        // 格式化变化
+        function formatChange(change) {
+            if (change === undefined || change === null || change === 0) return '';
+            const prefix = change > 0 ? '+' : '';
+            const cls = change > 0 ? 'change-up' : 'change-down';
+            return `<span class="${cls}">${prefix}${formatNumber(change)}</span>`;
+        }
+
+        // 格式化时长
+        function formatDuration(seconds) {
+            if (!seconds) return '-';
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return mins > 0 ? `${mins}分${secs}秒` : `${secs}秒`;
+        }
+
+        // 格式化更新时间（友好显示）
+        function formatUpdateTime(timestamp) {
+            if (!timestamp) return '-';
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            const diffDays = Math.floor(diffMs / 86400000);
+
+            if (diffMins < 60) {
+                return diffMins <= 1 ? '刚刚' : `${diffMins}分钟前`;
+            } else if (diffHours < 24) {
+                return `${diffHours}小时前`;
+            } else if (diffDays < 7) {
+                return `${diffDays}天前`;
+            } else {
+                return date.toLocaleDateString('zh-CN', { month: 'numeric', day: 'numeric' }) + ' ' +
+                       date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+            }
+        }
+
+        // 加载平台数据
+        async function loadPlatformData() {
+            try {
+                const response = await fetch('data/all_data.json');
+                if (!response.ok) throw new Error('加载失败');
+                platformData = await response.json();
+                document.getElementById('updateTime').textContent = `平台数据更新于 ${platformData.updated_at}`;
+                renderPlatforms();
+                renderHotContent();
+            } catch (error) {
+                console.error('平台数据加载失败:', error);
+            }
+        }
+
+        // 加载 GA 数据
+        async function loadGAData() {
+            try {
+                const response = await fetch('data/ga_data.json');
+                if (!response.ok) throw new Error('加载失败');
+                gaData = await response.json();
+                document.getElementById('gaUpdateTime').textContent = `更新于 ${gaData.updated_at}`;
+                renderGA();
+            } catch (error) {
+                console.error('GA 数据加载失败:', error);
+                document.getElementById('gaUpdateTime').textContent = '数据加载失败';
+            }
+        }
+
+        // 渲染平台卡片
+        function renderPlatforms() {
+            const container = document.getElementById('platformsColumn');
+            container.innerHTML = '';
+
+            const platforms = ['douyin', 'xiaohongshu', 'shipinhao', 'gongzhonghao'];
+
+            platforms.forEach(platform => {
+                const config = platformConfig[platform];
+                const data = platformData ? platformData[platform] : null;
+
+                const card = document.createElement('div');
+                card.className = 'platform-card';
+
+                // 检查是否是公众号且数据未开通（粉丝和阅读都是0）
+                const isGzhPending = platform === 'gongzhonghao' && data && data.account &&
+                    data.account.followers === 0 && data.account.total_views === 0;
+
+                if (!data || !data.account || isGzhPending) {
+                    // 未接入或待开通的平台
+                    const statusText = isGzhPending ? '待开通数据采集' : '待接入';
+                    card.innerHTML = `
+                        <div class="platform-header">
+                            <div class="platform-icon"><img src="${config.icon}" alt="${config.name}"></div>
+                            <div class="platform-info">
+                                <div class="platform-name">${config.name}</div>
+                                <div class="platform-account">${isGzhPending ? (data.account.account_name || '-') : '待接入'}</div>
+                            </div>
+                            <span class="platform-status pending">${statusText}</span>
+                        </div>
+                        <div class="platform-stats">
+                            <div class="stat-item"><div class="stat-label">粉丝</div><div class="stat-value">-</div></div>
+                            <div class="stat-item"><div class="stat-label">阅读</div><div class="stat-value">-</div></div>
+                            <div class="stat-item"><div class="stat-label">互动</div><div class="stat-value">-</div></div>
+                        </div>
+                    `;
+                } else {
+                    const account = data.account;
+                    const changes = calculatePlatformChanges(platform);
+
+                    // 计算总互动
+                    const interactions = (account.followers || 0) + (account.total_views || 0) +
+                        (account.total_likes || 0) + (account.total_comments || 0) +
+                        (account.total_shares || 0) + (account.total_collects || 0);
+
+                    const interactionsChange = changes ?
+                        (changes.followers || 0) + (changes.views || 0) +
+                        (changes.likes || 0) + (changes.comments || 0) +
+                        (changes.shares || 0) + (changes.collects || 0) : 0;
+
+                    // 使用 DOM API 构建卡片内容（安全方式）
+                    const headerDiv = document.createElement('div');
+                    headerDiv.className = 'platform-header';
+
+                    const iconDiv = document.createElement('div');
+                    iconDiv.className = 'platform-icon';
+                    const iconImg = document.createElement('img');
+                    iconImg.src = config.icon;
+                    iconImg.alt = config.name;
+                    iconDiv.appendChild(iconImg);
+
+                    const infoDiv = document.createElement('div');
+                    infoDiv.className = 'platform-info';
+                    const nameDiv = document.createElement('div');
+                    nameDiv.className = 'platform-name';
+                    nameDiv.textContent = config.name;
+                    const accountDiv = document.createElement('div');
+                    accountDiv.className = 'platform-account';
+                    accountDiv.textContent = account.account_name || '-';
+                    infoDiv.appendChild(nameDiv);
+                    infoDiv.appendChild(accountDiv);
+
+                    // 总互动
+                    const totalDiv = document.createElement('div');
+                    totalDiv.className = 'platform-total';
+                    const totalLabelDiv = document.createElement('div');
+                    totalLabelDiv.className = 'total-label';
+                    totalLabelDiv.textContent = '总互动';
+                    const totalValueDiv = document.createElement('div');
+                    totalValueDiv.className = 'total-value';
+                    totalValueDiv.textContent = formatNumber(interactions);
+                    const totalChangeDiv = document.createElement('div');
+                    totalChangeDiv.className = 'total-change';
+                    totalChangeDiv.innerHTML = formatChange(interactionsChange);
+                    totalDiv.appendChild(totalLabelDiv);
+                    totalDiv.appendChild(totalValueDiv);
+                    totalDiv.appendChild(totalChangeDiv);
+
+                    headerDiv.appendChild(iconDiv);
+                    headerDiv.appendChild(infoDiv);
+                    headerDiv.appendChild(totalDiv);
+
+                    const statsDiv = document.createElement('div');
+                    statsDiv.className = 'platform-stats';
+
+                    const statsConfig = [
+                        { label: '作品', value: account.total_works, change: changes?.works },
+                        { label: '粉丝', value: account.followers, change: changes?.followers },
+                        { label: '播放', value: account.total_views, change: changes?.views },
+                        { label: '点赞', value: account.total_likes, change: changes?.likes },
+                        { label: '评论', value: account.total_comments, change: changes?.comments },
+                        { label: '分享', value: account.total_shares, change: changes?.shares },
+                        { label: '收藏', value: account.total_collects, change: changes?.collects }
+                    ];
+
+                    statsConfig.forEach(stat => {
+                        const statItem = document.createElement('div');
+                        statItem.className = 'stat-item';
+                        const statLabel = document.createElement('div');
+                        statLabel.className = 'stat-label';
+                        statLabel.textContent = stat.label;
+                        const statValue = document.createElement('div');
+                        statValue.className = 'stat-value';
+                        statValue.textContent = formatNumber(stat.value);
+                        const statChange = document.createElement('div');
+                        statChange.className = 'stat-change';
+                        statChange.innerHTML = formatChange(stat.change);
+                        statItem.appendChild(statLabel);
+                        statItem.appendChild(statValue);
+                        statItem.appendChild(statChange);
+                        statsDiv.appendChild(statItem);
+                    });
+
+                    card.appendChild(headerDiv);
+                    card.appendChild(statsDiv);
+
+                    // 添加更新时间
+                    if (account.last_updated) {
+                        const updateTimeDiv = document.createElement('div');
+                        updateTimeDiv.className = 'platform-update-time';
+                        updateTimeDiv.textContent = '数据更新: ' + formatUpdateTime(account.last_updated);
+                        card.appendChild(updateTimeDiv);
+                    }
+                }
+
+                container.appendChild(card);
+            });
+        }
+
+        // 获取最新快照
+        function getLatestSnapshot(platform) {
+            if (!platformData || !platformData.daily_snapshots) return null;
+            const snapshots = platformData.daily_snapshots
+                .filter(s => s.platform === platform)
+                .sort((a, b) => new Date(b.date) - new Date(a.date));
+            return snapshots[0] || null;
+        }
+
+        // 获取指定天数前的日期字符串
+        function getDateDaysAgo(days) {
+            const date = new Date();
+            date.setDate(date.getDate() - days);
+            return date.toISOString().split('T')[0];
+        }
+
+        // 获取指定平台在指定日期的快照
+        function getSnapshotByDate(platform, targetDate) {
+            if (!platformData || !platformData.daily_snapshots) return null;
+            return platformData.daily_snapshots.find(s =>
+                s.platform === platform && s.date === targetDate
+            );
+        }
+
+        // 获取指定平台最接近目标日期的快照（如果精确日期没有数据）
+        function getClosestSnapshot(platform, targetDate) {
+            if (!platformData || !platformData.daily_snapshots) return null;
+
+            const targetTime = new Date(targetDate).getTime();
+            const platformSnapshots = platformData.daily_snapshots
+                .filter(s => s.platform === platform && new Date(s.date).getTime() <= targetTime)
+                .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            return platformSnapshots[0] || null;
+        }
+
+        // 计算平台的变化值（基于选择的时间周期）
+        function calculatePlatformChanges(platform) {
+            const data = platformData[platform];
+            if (!data || !data.account) return null;
+
+            const account = data.account;
+            const compareDate = getDateDaysAgo(currentPeriod);
+
+            // 如果是对比昨天，使用最新快照中的 change 值
+            if (currentPeriod === 1) {
+                const latestSnapshot = getLatestSnapshot(platform);
+                if (latestSnapshot) {
+                    return {
+                        works: latestSnapshot.works_change || 0,
+                        followers: latestSnapshot.followers_change || 0,
+                        views: latestSnapshot.views_change || 0,
+                        likes: latestSnapshot.likes_change || 0,
+                        comments: latestSnapshot.comments_change || 0,
+                        shares: latestSnapshot.shares_change || 0,
+                        collects: latestSnapshot.collects_change || 0
+                    };
+                }
+            }
+
+            // 尝试获取对比日期的快照
+            let oldSnapshot = getSnapshotByDate(platform, compareDate);
+
+            // 如果没有精确日期的数据，尝试在附近几天找
+            if (!oldSnapshot) {
+                // 允许的日期范围：7天对比允许±1天，30天对比允许±3天
+                const tolerance = currentPeriod === 7 ? 1 : 3;
+                for (let i = 1; i <= tolerance; i++) {
+                    // 先找早一点的日期
+                    oldSnapshot = getSnapshotByDate(platform, getDateDaysAgo(currentPeriod + i));
+                    if (oldSnapshot) break;
+                    // 再找晚一点的日期
+                    oldSnapshot = getSnapshotByDate(platform, getDateDaysAgo(currentPeriod - i));
+                    if (oldSnapshot) break;
+                }
+            }
+
+            // 计算与历史快照的差值（如果没有历史数据，假设旧值为0）
+            const oldWorks = oldSnapshot?.total_works || 0;
+            const oldFollowers = oldSnapshot?.followers || 0;
+            const oldViews = oldSnapshot?.total_views || 0;
+            const oldLikes = oldSnapshot?.total_likes || 0;
+            const oldComments = oldSnapshot?.total_comments || 0;
+            const oldShares = oldSnapshot?.total_shares || 0;
+            const oldCollects = oldSnapshot?.total_collects || 0;
+
+            return {
+                works: (account.total_works || 0) - oldWorks,
+                followers: (account.followers || 0) - oldFollowers,
+                views: (account.total_views || 0) - oldViews,
+                likes: (account.total_likes || 0) - oldLikes,
+                comments: (account.total_comments || 0) - oldComments,
+                shares: (account.total_shares || 0) - oldShares,
+                collects: (account.total_collects || 0) - oldCollects
+            };
+        }
+
+        // 获取 GA 历史数据并计算变化（使用 daily_trend 数据）
+        function calculateGAChanges() {
+            if (!gaData) return null;
+
+            // 使用 overview_7d 作为当前汇总数据
+            const overview = gaData.overview_7d || {};
+            const currentUsers = overview.active_users || 0;
+            const currentSessions = overview.sessions || 0;
+            const currentPageViews = overview.page_views || 0;
+
+            // 根据对比周期计算历史汇总数据
+            const trend = gaData.daily_trend || [];
+            if (trend.length === 0) {
+                // 没有历史数据，变化值等于当前值（从0增长）
+                return {
+                    active_users: currentUsers,
+                    sessions: currentSessions,
+                    page_views: currentPageViews
+                };
+            }
+
+            // 获取最新日期
+            const latestDate = new Date(trend[trend.length - 1].date);
+
+            // 计算对比周期的起止日期
+            const periodStart = new Date(latestDate);
+            periodStart.setDate(periodStart.getDate() - currentPeriod - 6); // 7天窗口的起始
+            const periodEnd = new Date(latestDate);
+            periodEnd.setDate(periodEnd.getDate() - currentPeriod);
+
+            // 汇总对比周期内的数据（7天窗口）
+            let oldUsers = 0, oldSessions = 0, oldPageViews = 0;
+            let hasOldData = false;
+
+            trend.forEach(day => {
+                const dayDate = new Date(day.date);
+                if (dayDate >= periodStart && dayDate <= periodEnd) {
+                    oldUsers += day.active_users || 0;
+                    oldSessions += day.sessions || 0;
+                    oldPageViews += day.page_views || 0;
+                    hasOldData = true;
+                }
+            });
+
+            // 如果对比周期内没有数据，变化值等于当前值
+            if (!hasOldData) {
+                return {
+                    active_users: currentUsers,
+                    sessions: currentSessions,
+                    page_views: currentPageViews
+                };
+            }
+
+            return {
+                active_users: currentUsers - oldUsers,
+                sessions: currentSessions - oldSessions,
+                page_views: currentPageViews - oldPageViews
+            };
+        }
+
+        // 渲染 GA 数据
+        function renderGA() {
+            if (!gaData) return;
+
+            const overview = gaData.overview_7d || {};
+            const realtime = gaData.realtime_users || 0;
+            const gaChanges = calculateGAChanges();
+
+            // 概览指标（包含实时用户和变化值）
+            const overviewHtml = `
+                <div class="ga-metric" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white;">
+                    <div class="ga-metric-value" style="color: white;">${realtime}</div>
+                    <div class="ga-metric-label" style="color: rgba(255,255,255,0.9);">实时在线</div>
+                </div>
+                <div class="ga-metric">
+                    <div class="ga-metric-value">${formatNumber(overview.active_users)}</div>
+                    <div class="ga-metric-label">活跃用户 (7天)</div>
+                    <div class="ga-metric-change">${formatChange(gaChanges?.active_users)}</div>
+                </div>
+                <div class="ga-metric">
+                    <div class="ga-metric-value">${formatNumber(overview.sessions)}</div>
+                    <div class="ga-metric-label">会话数</div>
+                    <div class="ga-metric-change">${formatChange(gaChanges?.sessions)}</div>
+                </div>
+                <div class="ga-metric">
+                    <div class="ga-metric-value">${formatNumber(overview.page_views)}</div>
+                    <div class="ga-metric-label">页面浏览</div>
+                    <div class="ga-metric-change">${formatChange(gaChanges?.page_views)}</div>
+                </div>
+                <div class="ga-metric">
+                    <div class="ga-metric-value">${formatDuration(overview.avg_session_duration)}</div>
+                    <div class="ga-metric-label">平均时长</div>
+                </div>
+            `;
+            document.getElementById('gaOverview').innerHTML = overviewHtml;
+
+            // 热门页面
+            const topPagesHtml = (gaData.top_pages || []).slice(0, 5).map(page => `
+                <li class="ga-list-item">
+                    <span class="ga-list-name" title="${page.page}">${page.page}</span>
+                    <span class="ga-list-value">${formatNumber(page.views)}</span>
+                </li>
+            `).join('');
+            document.getElementById('gaTopPages').innerHTML = topPagesHtml || '<li class="ga-list-item">暂无数据</li>';
+
+            // 流量来源
+            const sourcesHtml = (gaData.traffic_sources || []).slice(0, 5).map(src => `
+                <li class="ga-list-item">
+                    <span class="ga-list-name">${src.source}</span>
+                    <span class="ga-list-value">${formatNumber(src.sessions)}</span>
+                </li>
+            `).join('');
+            document.getElementById('gaTrafficSources').innerHTML = sourcesHtml || '<li class="ga-list-item">暂无数据</li>';
+
+            // 设备类型
+            const devicesHtml = (gaData.devices || []).map(d => `
+                <li class="ga-list-item">
+                    <span class="ga-list-name">${d.device === 'desktop' ? '💻 桌面' : d.device === 'mobile' ? '📱 移动' : '📟 平板'}</span>
+                    <span class="ga-list-value">${d.sessions} (${Math.round(d.sessions / overview.sessions * 100)}%)</span>
+                </li>
+            `).join('');
+            document.getElementById('gaDevices').innerHTML = devicesHtml || '<li class="ga-list-item">暂无数据</li>';
+
+            // 操作系统
+            const osHtml = (gaData.operating_systems || []).slice(0, 5).map(o => `
+                <li class="ga-list-item">
+                    <span class="ga-list-name">${o.os || '未知'}</span>
+                    <span class="ga-list-value">${o.sessions}</span>
+                </li>
+            `).join('');
+            document.getElementById('gaOS').innerHTML = osHtml || '<li class="ga-list-item">暂无数据</li>';
+
+            // 语言
+            const langHtml = (gaData.languages || []).slice(0, 5).map(l => `
+                <li class="ga-list-item">
+                    <span class="ga-list-name">${l.language || '未知'}</span>
+                    <span class="ga-list-value">${l.sessions}</span>
+                </li>
+            `).join('');
+            document.getElementById('gaLanguages').innerHTML = langHtml || '<li class="ga-list-item">暂无数据</li>';
+
+            // 着陆页
+            const landingHtml = (gaData.landing_pages || []).slice(0, 5).map(p => `
+                <li class="ga-list-item">
+                    <span class="ga-list-name" title="${p.page}">${p.page}</span>
+                    <span class="ga-list-value">${p.sessions}</span>
+                </li>
+            `).join('');
+            document.getElementById('gaLandingPages').innerHTML = landingHtml || '<li class="ga-list-item">暂无数据</li>';
+
+            // 退出页
+            const exitHtml = (gaData.exit_pages || []).slice(0, 5).map(p => `
+                <li class="ga-list-item">
+                    <span class="ga-list-name" title="${p.page}">${p.page}</span>
+                    <span class="ga-list-value">${p.sessions}</span>
+                </li>
+            `).join('');
+            document.getElementById('gaExitPages').innerHTML = exitHtml || '<li class="ga-list-item">暂无数据</li>';
+
+            // 地理分布
+            const geoHtml = (gaData.geo || []).slice(0, 5).map(g => `
+                <li class="ga-list-item">
+                    <span class="ga-list-name">${g.country || '未知'}</span>
+                    <span class="ga-list-value">${g.users} 用户</span>
+                </li>
+            `).join('');
+            document.getElementById('gaGeo').innerHTML = geoHtml || '<li class="ga-list-item">暂无数据</li>';
+
+            // 趋势图
+            renderGAChart();
+        }
+
+        // 渲染 GA 图表
+        function renderGAChart() {
+            if (gaChart) gaChart.destroy();
+
+            const trend = gaData.daily_trend || [];
+            const labels = trend.map(d => d.date.slice(5)); // MM-DD
+            const pageViews = trend.map(d => d.page_views);
+            const users = trend.map(d => d.active_users);
+            const newUsers = trend.map(d => d.new_users || 0);
+
+            gaChart = new Chart(document.getElementById('gaChart'), {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            type: 'line',
+                            label: '页面浏览',
+                            data: pageViews,
+                            borderColor: '#4f46e5',
+                            backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                            fill: true,
+                            tension: 0.3,
+                            yAxisID: 'y1',
+                            order: 0
+                        },
+                        {
+                            type: 'bar',
+                            label: '活跃用户',
+                            data: users,
+                            backgroundColor: 'rgba(16, 185, 129, 0.8)',
+                            borderRadius: 4,
+                            yAxisID: 'y',
+                            order: 1
+                        },
+                        {
+                            type: 'bar',
+                            label: '首次访问',
+                            data: newUsers,
+                            backgroundColor: 'rgba(245, 158, 11, 0.8)',
+                            borderRadius: 4,
+                            yAxisID: 'y',
+                            order: 2
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    },
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            position: 'left',
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: '用户数'
+                            }
+                        },
+                        y1: {
+                            type: 'linear',
+                            position: 'right',
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: '浏览量'
+                            },
+                            grid: {
+                                drawOnChartArea: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 渲染热门内容
+        function renderHotContent() {
+            const container = document.getElementById('hotContentList');
+            if (!platformData) {
+                container.innerHTML = '<div class="loading">暂无数据</div>';
+                return;
+            }
+
+            const allWorks = [];
+            ['douyin', 'xiaohongshu', 'shipinhao'].forEach(platform => {
+                const data = platformData[platform];
+                if (data && data.works) {
+                    data.works.forEach(work => {
+                        allWorks.push({ ...work, platformKey: platform });
+                    });
+                }
+            });
+
+            allWorks.sort((a, b) => (b.views || 0) - (a.views || 0));
+            const top5 = allWorks.slice(0, 5);
+
+            container.innerHTML = top5.map((work, index) => {
+                const config = platformConfig[work.platformKey];
+                const rankClass = index < 3 ? `rank-${index + 1}` : 'rank-other';
+                return `
+                    <div class="content-item">
+                        <div class="content-rank ${rankClass}">${index + 1}</div>
+                        <div class="content-info">
+                            <div class="content-title" title="${work.title}">${work.title || '无标题'}</div>
+                            <div class="content-meta">
+                                <img src="${config.icon}" alt="${config.name}">
+                                <span>${config.name}</span>
+                                ${work.publish_time ? `<span>· ${work.publish_time}</span>` : ''}
+                            </div>
+                        </div>
+                        <div class="content-stats">
+                            <div class="content-stats-value">${formatNumber(work.views)}</div>
+                            <div>播放</div>
+                        </div>
+                    </div>
+                `;
+            }).join('') || '<div class="loading">暂无数据</div>';
+        }
+
+        // 周期选择器事件
+        document.querySelectorAll('.period-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentPeriod = parseInt(btn.dataset.period);
+                renderPlatforms();
+                renderGA(); // 同时更新 GA 数据对比
+            });
+        });
+
+        // 初始化
+        loadPlatformData();
+        loadGAData();
+    </script>
+</body>
+</html>

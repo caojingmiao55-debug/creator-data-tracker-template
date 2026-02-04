@@ -1,0 +1,62 @@
+#!/bin/bash
+#
+# CreatorCollector - URL Scheme 启动脚本
+# 通过 creator-collector:// URL Scheme 触发本地采集脚本
+#
+
+# 项目目录
+PROJECT_DIR="/path/to/creator-data-tracker"
+
+# 日志文件
+LOG_FILE="$PROJECT_DIR/data/url_scheme.log"
+
+# 记录日志
+log() {
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" >> "$LOG_FILE"
+}
+
+log "URL Scheme 被触发"
+log "参数: $1"
+
+# 解析 URL 参数
+URL="$1"
+
+# 默认采集视频号
+PLATFORM="shipinhao"
+
+# 解析 platform 参数
+if [[ "$URL" == *"platform="* ]]; then
+    PLATFORM=$(echo "$URL" | sed -n 's/.*platform=\([^&]*\).*/\1/p')
+fi
+
+log "目标平台: $PLATFORM"
+
+# 切换到项目目录
+cd "$PROJECT_DIR"
+
+# 使用项目的虚拟环境 Python
+PYTHON_CMD="$PROJECT_DIR/.venv/bin/python"
+
+# 检查 Python 环境
+if [ ! -f "$PYTHON_CMD" ]; then
+    log "错误: 未找到虚拟环境 Python: $PYTHON_CMD"
+    osascript -e 'display notification "未找到 Python 虚拟环境" with title "Creator Collector" sound name "Basso"'
+    exit 1
+fi
+
+# 发送通知
+osascript -e "display notification \"正在启动 $PLATFORM 采集...\" with title \"Creator Collector\""
+
+log "启动采集脚本: $PYTHON_CMD collect_all.py --platform $PLATFORM"
+
+# 运行采集脚本（带界面，允许登录）
+$PYTHON_CMD "$PROJECT_DIR/collect_all.py" --platform "$PLATFORM" >> "$LOG_FILE" 2>&1
+
+# 检查结果
+if [ $? -eq 0 ]; then
+    log "采集完成"
+    osascript -e "display notification \"$PLATFORM 数据采集完成\" with title \"Creator Collector\" sound name \"Glass\""
+else
+    log "采集失败"
+    osascript -e "display notification \"$PLATFORM 数据采集失败，请查看日志\" with title \"Creator Collector\" sound name \"Basso\""
+fi

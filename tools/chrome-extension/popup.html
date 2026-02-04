@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>创作者数据采集</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      width: 380px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang SC', sans-serif;
+      background: #1a1a2e;
+      color: #fff;
+      padding: 16px;
+    }
+    h1 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    h1::before { content: "📊"; }
+    .subtitle {
+      font-size: 11px;
+      color: #666;
+      margin-bottom: 12px;
+    }
+    .platforms {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .platform-card {
+      background: rgba(255,255,255,0.05);
+      border-radius: 8px;
+      padding: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 1px solid transparent;
+    }
+    .platform-card:hover {
+      background: rgba(255,255,255,0.1);
+    }
+    .platform-card.ready {
+      border-color: #10d56a;
+    }
+    .platform-card.coming-soon {
+      opacity: 0.5;
+      cursor: default;
+    }
+    .platform-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+    .platform-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: bold;
+      color: #fff;
+    }
+    .douyin { background: linear-gradient(135deg, #25f4ee, #fe2c55); }
+    .xiaohongshu { background: linear-gradient(135deg, #ff2442, #ff6b6b); }
+    .shipinhao { background: linear-gradient(135deg, #07c160, #10d56a); }
+    .weixin { background: linear-gradient(135deg, #07c160, #09bb07); }
+    .bilibili { background: linear-gradient(135deg, #fb7299, #fc8bab); }
+    .twitter { background: linear-gradient(135deg, #1da1f2, #0d8bd9); }
+    .platform-name {
+      font-size: 12px;
+      font-weight: 500;
+    }
+    .platform-stats {
+      font-size: 11px;
+      color: #888;
+    }
+    .platform-stats.has-data {
+      color: #10d56a;
+    }
+    .coming-soon-badge {
+      font-size: 9px;
+      background: #444;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-left: auto;
+    }
+
+    .actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .btn-row {
+      display: flex;
+      gap: 8px;
+    }
+    button {
+      flex: 1;
+      padding: 10px 12px;
+      border: none;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    button:hover { transform: translateY(-1px); }
+    button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .btn-primary { background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; }
+    .btn-secondary { background: rgba(255,255,255,0.1); color: #fff; }
+    .btn-success { background: linear-gradient(135deg, #10d56a, #07c160); color: #fff; }
+    .btn-danger { background: rgba(255,71,87,0.2); color: #ff4757; }
+
+    .data-preview {
+      background: rgba(255,255,255,0.05);
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 11px;
+      max-height: 180px;
+      overflow-y: auto;
+      display: none;
+    }
+    .data-preview.show { display: block; }
+    .preview-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .preview-title { font-weight: 500; color: #888; }
+    .preview-close {
+      background: none;
+      border: none;
+      color: #666;
+      cursor: pointer;
+      font-size: 14px;
+      padding: 0;
+    }
+    .data-section {
+      margin-bottom: 10px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .data-section:last-child { border-bottom: none; margin-bottom: 0; }
+    .data-section-title {
+      font-weight: 500;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .data-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 2px 0;
+    }
+    .data-label { color: #666; }
+    .data-value { font-weight: 500; }
+
+    .links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+    .links a {
+      font-size: 10px;
+      color: #666;
+      text-decoration: none;
+    }
+    .links a:hover { color: #888; }
+  </style>
+</head>
+<body>
+  <h1>创作者数据采集</h1>
+  <p class="subtitle">点击平台卡片跳转，或在平台页面点击"采集"按钮</p>
+
+  <div class="platforms">
+    <div class="platform-card" data-platform="douyin" data-url="https://creator.douyin.com/creator/home">
+      <div class="platform-header">
+        <span class="platform-icon douyin">D</span>
+        <span class="platform-name">抖音</span>
+      </div>
+      <div class="platform-stats" id="douyin-stats">未采集</div>
+    </div>
+    <div class="platform-card" data-platform="xiaohongshu" data-url="https://creator.xiaohongshu.com/statistics/data-analysis">
+      <div class="platform-header">
+        <span class="platform-icon xiaohongshu">小</span>
+        <span class="platform-name">小红书</span>
+      </div>
+      <div class="platform-stats" id="xiaohongshu-stats">未采集</div>
+    </div>
+    <div class="platform-card" data-platform="shipinhao" data-url="https://channels.weixin.qq.com/platform/post/list">
+      <div class="platform-header">
+        <span class="platform-icon shipinhao">视</span>
+        <span class="platform-name">视频号</span>
+      </div>
+      <div class="platform-stats" id="shipinhao-stats">未采集</div>
+    </div>
+    <div class="platform-card" data-platform="weixin" data-url="https://mp.weixin.qq.com/">
+      <div class="platform-header">
+        <span class="platform-icon weixin">公</span>
+        <span class="platform-name">公众号</span>
+        <span class="coming-soon-badge">即将</span>
+      </div>
+      <div class="platform-stats" id="weixin-stats">开发中</div>
+    </div>
+    <div class="platform-card" data-platform="bilibili" data-url="https://member.bilibili.com/platform/home">
+      <div class="platform-header">
+        <span class="platform-icon bilibili">B</span>
+        <span class="platform-name">B站</span>
+        <span class="coming-soon-badge">即将</span>
+      </div>
+      <div class="platform-stats" id="bilibili-stats">开发中</div>
+    </div>
+    <div class="platform-card" data-platform="twitter" data-url="https://x.com/home">
+      <div class="platform-header">
+        <span class="platform-icon twitter">X</span>
+        <span class="platform-name">Twitter</span>
+        <span class="coming-soon-badge">即将</span>
+      </div>
+      <div class="platform-stats" id="twitter-stats">开发中</div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn-primary" id="collectBtn">📥 采集当前页面</button>
+    <div class="btn-row">
+      <button class="btn-success" id="exportBtn">导出 JSON</button>
+      <button class="btn-secondary" id="previewBtn">预览数据</button>
+      <button class="btn-danger" id="clearBtn">清空</button>
+    </div>
+  </div>
+
+  <div class="cookie-sync-section">
+    <div class="section-header">
+      <span class="section-title">🔄 Cookie同步</span>
+      <span class="sync-status-badge" id="syncBadge">未配置</span>
+    </div>
+    <div class="sync-status" id="syncStatus">
+      <div class="sync-hint">登录平台后自动同步Cookie到本地配置</div>
+    </div>
+    <div class="btn-row">
+      <button class="btn-secondary" id="syncAllBtn">同步所有Cookie</button>
+      <button class="btn-secondary" id="exportCookieBtn">导出Cookie</button>
+    </div>
+  </div>
+
+  <style>
+    .cookie-sync-section {
+      background: rgba(255,255,255,0.03);
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .section-title {
+      font-size: 12px;
+      font-weight: 500;
+    }
+    .sync-status-badge {
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.1);
+    }
+    .sync-status-badge.connected {
+      background: rgba(16,213,106,0.2);
+      color: #10d56a;
+    }
+    .sync-status-badge.pending {
+      background: rgba(255,193,7,0.2);
+      color: #ffc107;
+    }
+    .sync-status {
+      font-size: 11px;
+      margin-bottom: 10px;
+    }
+    .sync-hint {
+      color: #666;
+      font-size: 10px;
+    }
+    .sync-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 4px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .sync-item:last-child {
+      border-bottom: none;
+    }
+    .sync-platform {
+      font-weight: 500;
+    }
+    .sync-time {
+      color: #666;
+      font-size: 10px;
+    }
+    .sync-native {
+      color: #10d56a;
+      font-size: 9px;
+    }
+    .sync-storage {
+      color: #ffc107;
+      font-size: 9px;
+    }
+  </style>
+
+  <div class="data-preview" id="dataPreview">
+    <div class="preview-header">
+      <span class="preview-title">已采集数据预览</span>
+      <button class="preview-close" id="closePreview">×</button>
+    </div>
+    <div id="previewContent"></div>
+  </div>
+
+  <div class="links">
+    <a href="https://creator.douyin.com" target="_blank">抖音创作者</a>
+    <a href="https://creator.xiaohongshu.com" target="_blank">小红书创作者</a>
+    <a href="https://channels.weixin.qq.com" target="_blank">视频号助手</a>
+    <a href="https://mp.weixin.qq.com" target="_blank">公众号后台</a>
+    <a href="https://member.bilibili.com" target="_blank">B站创作中心</a>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

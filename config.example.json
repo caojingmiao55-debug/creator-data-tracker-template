@@ -1,0 +1,44 @@
+{
+  "douyin": {
+    "enabled": true,
+    "cookie": "在这里粘贴抖音创作者后台的 Cookie（从浏览器开发者工具获取）",
+    "cookie_updated_at": "",
+    "cookie_expires_hint": 14
+  },
+  "xiaohongshu": {
+    "enabled": true,
+    "cookie": "在这里粘贴小红书创作者中心的 Cookie",
+    "cookie_updated_at": "",
+    "cookie_expires_hint": 14
+  },
+  "shipinhao": {
+    "enabled": true,
+    "cookie": "在这里粘贴视频号助手的 Cookie",
+    "cookie_updated_at": "",
+    "cookie_expires_hint": 4
+  },
+  "gongzhonghao": {
+    "enabled": false,
+    "cookie": "在这里粘贴微信公众号后台的 Cookie（可选）",
+    "cookie_updated_at": "",
+    "cookie_expires_hint": 7
+  },
+  "google_analytics": {
+    "enabled": false,
+    "property_id": "properties/你的GA属性ID",
+    "credentials_file": "config/ga_credentials.json"
+  },
+  "settings": {
+    "works_limit": 50,
+    "auto_push_to_github": true,
+    "github_repo": "your-username/creator-data-tracker",
+    "notifications": {
+      "macos": true,
+      "wechat_work_webhook": "",
+      "dingtalk": {
+        "webhook": "",
+        "secret": ""
+      }
+    }
+  }
+}
