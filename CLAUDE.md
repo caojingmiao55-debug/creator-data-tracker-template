@@ -2,6 +2,66 @@
 
 这是一个多平台创作者数据采集与分析工具。当用户克隆此仓库后，请按以下步骤引导他们完成配置。
 
+## ⚠️ 用户常见困难（请提前告知）
+
+在开始配置前，**必须先告知用户以下重要信息**：
+
+### 1. Cookie 是最大的痛点
+
+| 问题 | 说明 |
+|------|------|
+| **什么是 Cookie** | 网站用来识别你登录状态的一串文字，相当于"临时通行证" |
+| **为什么需要** | 采集脚本需要用你的 Cookie 来"假装"是你在访问创作者后台 |
+| **会过期** | 抖音/小红书约 14 天，视频号仅 4 天左右 |
+| **过期后果** | 采集失败，需要重新获取 Cookie |
+
+**建议**：先只配置 1-2 个平台，跑通后再添加其他平台。
+
+### 2. 获取 Cookie 的方法（需要手把手教）
+
+很多用户不熟悉浏览器开发者工具，请详细说明：
+
+```
+1. 用 Chrome 浏览器打开创作者后台（如 creator.douyin.com）
+2. 登录你的账号
+3. 按 F12（Mac 按 Cmd+Option+I）打开开发者工具
+4. 点击顶部的 "Network"（网络）标签
+5. 按 F5 刷新页面
+6. 在左侧列表中点击任意一个请求
+7. 在右侧找到 "Request Headers"（请求标头）
+8. 找到 "Cookie:" 开头的那一行
+9. 复制 Cookie: 后面的全部内容（很长的一串）
+```
+
+**常见错误**：
+- 复制了 "Cookie:" 这几个字（不要复制这个前缀）
+- 只复制了部分内容（要复制完整，通常很长）
+- 复制了 Response Headers 里的内容（要找 Request Headers）
+
+### 3. 各平台后台地址
+
+| 平台 | 创作者后台地址 | Cookie 有效期 |
+|------|---------------|--------------|
+| 抖音 | https://creator.douyin.com | ~14 天 |
+| 小红书 | https://creator.xiaohongshu.com | ~14 天 |
+| 视频号 | https://channels.weixin.qq.com | ~4 天（容易失效） |
+| 公众号 | https://mp.weixin.qq.com | ~7 天 |
+
+### 4. 推荐配置顺序
+
+```
+1. 先配置抖音或小红书（最稳定）
+2. 验证采集成功后再添加其他平台
+3. 视频号建议最后配置（或暂时跳过）
+4. GA 是可选的，不影响主功能
+```
+
+### 5. 网络环境要求
+
+- Playwright 安装需要下载 Chromium 浏览器（约 150MB）
+- 如果下载慢，可能需要配置镜像或代理
+- 采集时需要能正常访问各平台网站
+
 ## 项目概述
 
 - **功能**：自动采集抖音、小红书、视频号、公众号的创作者数据，可选集成 Google Analytics
@@ -131,3 +191,75 @@ python query_db.py --platform douyin
 # 作品列表
 python query_db.py --works
 ```
+
+## 常见问题排查
+
+### 问题：Playwright 安装失败
+
+**症状**：`playwright install chromium` 下载很慢或失败
+
+**解决**：
+```bash
+# 使用国内镜像
+export PLAYWRIGHT_DOWNLOAD_HOST=https://npmmirror.com/mirrors/playwright
+playwright install chromium
+```
+
+### 问题：采集时报 401 或重定向
+
+**症状**：日志显示 `401 Unauthorized` 或跳转到登录页
+
+**原因**：Cookie 已过期
+
+**解决**：重新获取对应平台的 Cookie 并更新 config.json
+
+### 问题：采集成功但数据为空
+
+**症状**：没有报错，但 `all_data.json` 里数据都是 0
+
+**可能原因**：
+1. Cookie 格式不对（检查是否复制完整）
+2. 账号没有创作者权限（需要是创作者账号）
+3. 账号确实没有数据
+
+### 问题：视频号一直失败
+
+**现状**：视频号 Cookie 有效期极短（约 4 天），目前自动采集不稳定
+
+**建议**：
+1. 在 config.json 中设置 `"shipinhao": { "enabled": false }`
+2. 或者手动截图数据，让 Claude 识别录入
+
+### 问题：定时任务不执行
+
+**macOS 检查**：
+```bash
+launchctl list | grep creator
+# 如果没有输出，说明任务未加载
+```
+
+**重新加载**：
+```bash
+launchctl unload ~/Library/LaunchAgents/com.creator.tracker.plist
+launchctl load ~/Library/LaunchAgents/com.creator.tracker.plist
+```
+
+### 问题：小红书需要 user_id
+
+**获取方法**：
+1. 打开小红书创作者中心
+2. F12 打开开发者工具
+3. 在 Cookie 中找到 `x-user-id-creator.xiaohongshu.com=xxx`
+4. 复制 `xxx` 部分填入 config.json 的 user_id 字段
+
+## 配置成功的标志
+
+当你看到以下输出，说明配置成功：
+
+```
+[2026-02-04 10:00:00] 开始采集 douyin 数据...
+[2026-02-04 10:00:05] ✅ douyin 采集完成: 粉丝 1234, 播放 56789
+[2026-02-04 10:00:05] 数据已保存到 data/all_data.json
+```
+
+然后用浏览器打开 `index.html` 能看到数据图表，就说明全部配置成功了。
