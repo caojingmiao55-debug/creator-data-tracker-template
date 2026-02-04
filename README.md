@@ -2,6 +2,14 @@
 
 多平台创作者数据采集与分析工具，支持抖音、小红书、视频号。
 
+## 使用 Claude Code 快速配置
+
+将本仓库链接发送给 [Claude Code](https://claude.ai/claude-code)，说：
+
+> "帮我克隆并配置这个项目"
+
+Claude 会自动引导你完成环境配置、Cookie 获取和首次数据采集。
+
 ## 功能特性
 
 - **多平台支持**：抖音、小红书、视频号
@@ -30,16 +38,38 @@
 
 ## 快速开始
 
-### 1. 安装依赖
+### 方式一：使用 Claude Code（推荐）
+
+```
+1. 克隆仓库到本地
+2. 在 Claude Code 中打开项目目录
+3. 告诉 Claude："帮我配置这个项目"
+4. 按照 Claude 的引导完成配置
+```
+
+### 方式二：手动配置
+
+#### 1. 安装依赖
 
 ```bash
-pip install playwright browser-cookie3
+# 创建虚拟环境
+python3 -m venv .venv
+source .venv/bin/activate
+
+# 安装依赖
+pip install -r requirements.txt
 playwright install chromium
 ```
 
-### 2. 配置 Cookie
+#### 2. 初始化配置
 
-复制 `config.example.json` 为 `config.json`，填入各平台的 Cookie。
+```bash
+python scripts/init_project.py
+```
+
+#### 3. 配置 Cookie
+
+编辑 `config.json`，填入各平台的 Cookie（从浏览器开发者工具获取）。
 
 ### 3. 运行采集
 
