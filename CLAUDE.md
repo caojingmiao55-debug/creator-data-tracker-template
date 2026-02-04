@@ -45,7 +45,6 @@
 | 抖音 | https://creator.douyin.com | ~14 天 |
 | 小红书 | https://creator.xiaohongshu.com | ~14 天 |
 | 视频号 | https://channels.weixin.qq.com | ~4 天（容易失效） |
-| 公众号 | https://mp.weixin.qq.com | ~7 天 |
 
 ### 4. 推荐配置顺序
 

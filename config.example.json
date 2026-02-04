@@ -17,12 +17,6 @@
     "cookie_updated_at": "",
     "cookie_expires_hint": 4
   },
-  "gongzhonghao": {
-    "enabled": false,
-    "cookie": "在这里粘贴微信公众号后台的 Cookie（可选）",
-    "cookie_updated_at": "",
-    "cookie_expires_hint": 7
-  },
   "google_analytics": {
     "enabled": false,
     "property_id": "properties/你的GA属性ID",
