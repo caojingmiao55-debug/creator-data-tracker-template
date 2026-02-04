@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 创作者数据采集工具
-支持：抖音、小红书、视频号、公众号
+支持：抖音、小红书、视频号
 
 使用方法：
   python collect_all.py              # 采集所有平台
@@ -803,7 +803,7 @@ def main(target_platform=None):
         "gongzhonghao": collect_gongzhonghao
     }
 
-    platforms_to_collect = [target_platform] if target_platform else ["xiaohongshu", "douyin", "shipinhao", "gongzhonghao"]
+    platforms_to_collect = [target_platform] if target_platform else ["xiaohongshu", "douyin", "shipinhao"]
 
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
@@ -863,7 +863,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="创作者数据采集工具")
     parser.add_argument(
         "--platform",
-        choices=["douyin", "xiaohongshu", "shipinhao", "gongzhonghao"],
+        choices=["douyin", "xiaohongshu", "shipinhao"],
         help="指定采集的平台，不指定则采集所有平台"
     )
     args = parser.parse_args()

@@ -38,16 +38,14 @@ CONFIG_EXAMPLE = ROOT_DIR / "config.example.json"
 PLATFORM_DOMAINS = {
     "douyin": [".douyin.com", "creator.douyin.com"],
     "xiaohongshu": [".xiaohongshu.com", "creator.xiaohongshu.com"],
-    "shipinhao": [".weixin.qq.com", "channels.weixin.qq.com", ".qq.com"],
-    "gongzhonghao": ["mp.weixin.qq.com", ".qq.com"]
+    "shipinhao": [".weixin.qq.com", "channels.weixin.qq.com", ".qq.com"]
 }
 
 # 平台中文名
 PLATFORM_NAMES = {
     "douyin": "抖音",
     "xiaohongshu": "小红书",
-    "shipinhao": "视频号",
-    "gongzhonghao": "公众号"
+    "shipinhao": "视频号"
 }
 
 
@@ -234,7 +232,7 @@ def main():
     )
     parser.add_argument(
         "-p", "--platform",
-        choices=["douyin", "xiaohongshu", "shipinhao", "gongzhonghao"],
+        choices=["douyin", "xiaohongshu", "shipinhao"],
         action="append",
         help="指定要同步的平台 (可多次使用，默认全部)"
     )

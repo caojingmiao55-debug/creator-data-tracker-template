@@ -2,10 +2,7 @@
 const PLATFORMS = {
   douyin: { name: '抖音', ready: true },
   xiaohongshu: { name: '小红书', ready: true },
-  shipinhao: { name: '视频号', ready: true },
-  weixin: { name: '公众号', ready: false },
-  bilibili: { name: 'B站', ready: false },
-  twitter: { name: 'Twitter', ready: false }
+  shipinhao: { name: '视频号', ready: true }
 };
 
 // 格式化数字

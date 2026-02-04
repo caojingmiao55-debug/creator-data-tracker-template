@@ -63,7 +63,7 @@
 
 ## 项目概述
 
-- **功能**：自动采集抖音、小红书、视频号、公众号的创作者数据，可选集成 Google Analytics
+- **功能**：自动采集抖音、小红书、视频号的创作者数据，可选集成 Google Analytics
 - **技术栈**：Python + Playwright + SQLite + Chart.js
 - **部署方式**：本地运行采集脚本，数据仪表盘可部署到 Vercel/GitHub Pages
 

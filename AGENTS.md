@@ -54,7 +54,7 @@ There are two main collection pipelines; both write to `data/all_data.json` and 
   - Generates a `LaunchAgents` plist referencing `main.py`, lets you choose daily run time, and manages `logs/collect.log` / `logs/collect.error.log`.
 
 - **Predefined launchd job for `collect_all.py` (Mac)**
-  - Install/uninstall a fixed schedule (currently daily at 09:00 and 21:00) using the existing `com.creator.datacollector.plist`:
+  - Install/uninstall a fixed schedule (currently daily at 10:00 and 21:00) using the existing `com.creator.datacollector.plist`:
     - `./setup_schedule.sh`
   - Common manual commands echoed by the script:
     - Run once now: `python3 collect_all.py`

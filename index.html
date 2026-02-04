@@ -595,8 +595,7 @@
         const platformConfig = {
             douyin: { name: '抖音', icon: 'assets/抖音.png', color: '#fe2c55' },
             xiaohongshu: { name: '小红书', icon: 'assets/小红书.png', color: '#ff2442' },
-            shipinhao: { name: '视频号', icon: 'assets/视频号.jpeg', color: '#fa9d3b' },
-            gongzhonghao: { name: '公众号', icon: 'assets/公众号.png', color: '#07c160' }
+            shipinhao: { name: '视频号', icon: 'assets/视频号.jpeg', color: '#fa9d3b' }
         };
 
         // 格式化数字
@@ -677,7 +676,7 @@
             const container = document.getElementById('platformsColumn');
             container.innerHTML = '';
 
-            const platforms = ['douyin', 'xiaohongshu', 'shipinhao', 'gongzhonghao'];
+            const platforms = ['douyin', 'xiaohongshu', 'shipinhao'];
 
             platforms.forEach(platform => {
                 const config = platformConfig[platform];
@@ -686,11 +685,7 @@
                 const card = document.createElement('div');
                 card.className = 'platform-card';
 
-                // 检查是否是公众号且数据未开通（粉丝和阅读都是0）
-                const isGzhPending = platform === 'gongzhonghao' && data && data.account &&
-                    data.account.followers === 0 && data.account.total_views === 0;
-
-                if (!data || !data.account || isGzhPending) {
+                if (!data || !data.account) {
                     // 未接入或待开通的平台
                     const statusText = isGzhPending ? '待开通数据采集' : '待接入';
                     card.innerHTML = `
