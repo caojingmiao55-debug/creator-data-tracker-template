@@ -97,7 +97,7 @@ def main():
     print("   - 小红书：https://creator.xiaohongshu.com")
     print("   - 视频号：https://channels.weixin.qq.com")
     print()
-    print("2. (可选) 配置 Google Analytics：")
+    print("2. 配置 Google Analytics：")
     print("   - 编辑 config/ga_credentials.json")
     print("   - 填入 Google Cloud 服务账号密钥")
     print()

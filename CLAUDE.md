@@ -52,7 +52,7 @@
 1. 先配置抖音或小红书（最稳定）
 2. 验证采集成功后再添加其他平台
 3. 视频号建议最后配置（或暂时跳过）
-4. GA 是可选的，不影响主功能
+4. GA 配置需要 Google Cloud 服务账号
 ```
 
 ### 5. 网络环境要求
@@ -63,7 +63,7 @@
 
 ## 项目概述
 
-- **功能**：自动采集抖音、小红书、视频号的创作者数据，可选集成 Google Analytics
+- **功能**：自动采集抖音、小红书、视频号的创作者数据，集成 Google Analytics
 - **技术栈**：Python + Playwright + SQLite + Chart.js
 - **部署方式**：本地运行采集脚本，数据仪表盘可部署到 Vercel/GitHub Pages
 
@@ -98,7 +98,7 @@ python scripts/init_project.py
 
 这会创建：
 - `config.json` - 平台配置（需要用户填入 Cookie）
-- `config/ga_credentials.json` - GA 凭证（可选）
+- `config/ga_credentials.json` - GA 服务账号凭证
 - `data/all_data.json` - 数据文件
 - `data/ga_data.json` - GA 数据文件
 

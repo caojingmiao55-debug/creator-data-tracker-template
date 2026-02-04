@@ -33,7 +33,7 @@ Claude 会自动引导你完成环境配置、Cookie 获取和首次数据采集
 1. 先配置一个平台（推荐抖音或小红书，最稳定）
 2. 跑通采集流程
 3. 再逐步添加其他平台
-4. 视频号和 GA 是可选的
+4. 视频号 Cookie 容易过期，可稍后配置
 ```
 
 ## 功能特性
@@ -43,7 +43,7 @@ Claude 会自动引导你完成环境配置、Cookie 获取和首次数据采集
 - **数据可视化**：仪表盘展示粉丝、播放、互动等核心指标
 - **趋势分析**：支持 vs 昨天、7天前、30天前 对比
 - **SQLite 存储**：高效本地存储，支持 SQL 查询
-- **GA 集成**：可选接入 Google Analytics 网站数据
+- **GA 集成**：集成 Google Analytics 网站数据分析
 
 ## 数据指标
 
@@ -195,7 +195,7 @@ ORDER BY views DESC;
 0 9 * * * cd /path/to/creator-data-tracker && python collect_all.py
 ```
 
-## Google Analytics 集成（可选）
+## Google Analytics 集成
 
 支持采集 Google Analytics 4 数据，包括：
 - 实时用户、活跃用户、会话数、页面浏览量
@@ -203,7 +203,7 @@ ORDER BY views DESC;
 - 落地页、退出页分析
 - 每日趋势图表
 
-配置步骤见 [操作手册 - GA配置](docs/操作手册.md#三google-analytics-配置可选)
+配置步骤见 [操作手册 - GA配置](docs/操作手册.md#三google-analytics-配置)
 
 ## 注意事项
 
